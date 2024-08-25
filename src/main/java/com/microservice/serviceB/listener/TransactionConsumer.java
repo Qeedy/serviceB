@@ -1,7 +1,6 @@
 package com.microservice.serviceB.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.serviceB.entity.TransactionLog;
 import com.microservice.serviceB.mapper.TransactionMapper;
 import com.microservice.serviceB.model.TransactionDataModel;
 import com.microservice.serviceB.repository.TransactionLogRepository;
@@ -18,8 +17,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -54,11 +51,11 @@ public class TransactionConsumer {
             dataRow.createCell(0).setCellValue(transaction.getTransactionId().toString());
             dataRow.createCell(1).setCellValue(transaction.getCustomerId().toString());
             dataRow.createCell(2).setCellValue(transaction.getCustomerName());
-            dataRow.createCell(3).setCellValue(String.join(", ", transaction.getItemNames())); // Asumsikan Anda ingin menampilkan item sebagai String
+            dataRow.createCell(3).setCellValue(String.join(", ", transaction.getItemNames()));
             dataRow.createCell(4).setCellValue(transaction.getCustomerChange().toPlainString());
             dataRow.createCell(5).setCellValue(transaction.getTotalCost().toPlainString());
-            dataRow.createCell(6).setCellValue(transaction.getCustomerOldBalance().toPlainString()); // Old balance
-            dataRow.createCell(7).setCellValue(transaction.getCustomerNewBalance().toPlainString()); // New balance
+            dataRow.createCell(6).setCellValue(transaction.getCustomerOldBalance().toPlainString());
+            dataRow.createCell(7).setCellValue(transaction.getCustomerNewBalance().toPlainString());
             try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
                 workbook.write(fileOut);
             } catch (IOException e) {

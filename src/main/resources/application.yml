@@ -1,5 +1,12 @@
 server:
   port : 8081
+
+flowable:
+  id-generator:
+    datasource: datasource
+  application:
+    deployment-mode: classpath
+
 spring:
   application:
     name: serviceB
@@ -31,3 +38,9 @@ spring:
     consumer-group-1:
       group-id: transaction
       auto-offset-reset: latest
+
+test:
+  parent:
+    is-new-parent: true
+
+

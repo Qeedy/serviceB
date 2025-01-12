@@ -2,28 +2,27 @@ package com.microservice.serviceB.service.impl;
 
 import com.microservice.serviceB.entity.BookingDetail;
 import com.microservice.serviceB.entity.BookingProcess;
-import com.microservice.serviceB.entity.Invoice;
 import com.microservice.serviceB.entity.User;
 import com.microservice.serviceB.enums.BookingStatus;
-import com.microservice.serviceB.enums.InvoiceStatus;
 import com.microservice.serviceB.enums.ServiceTime;
 import com.microservice.serviceB.mapper.BookingProcessMapper;
-import com.microservice.serviceB.model.*;
+import com.microservice.serviceB.model.BookingDetailModel;
+import com.microservice.serviceB.model.BookingListModel;
+import com.microservice.serviceB.model.CreateBookingModel;
 import com.microservice.serviceB.repository.BookingProcessRepository;
 import com.microservice.serviceB.repository.UserRepository;
 import com.microservice.serviceB.service.BookingService;
+import com.microservice.serviceB.service.SequencesService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,8 @@ public class BookingServiceImpl implements BookingService {
     BookingProcessRepository bookingProcessRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    SequencesService sequenceService;
 
     @Override
     public BookingDetailModel getBookingDetailModel(String bookingNumber) {
@@ -107,6 +108,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(()-> new Exception("Get User Failed"));
         BookingProcess bookingProcess = BookingProcess.builder()
                 .status(BookingStatus.DRAFT)
+                .bookingNumber(sequenceService.getSequenceNumber("BO"))
                 .bookingDate(model.getBookingDate()
                         .atTime(model.getServiceTime().getMaxTime(), 0))
                 .serviceTime(model.getServiceTime())

@@ -8,6 +8,7 @@ import com.microservice.serviceB.enums.BookingStatus;
 import com.microservice.serviceB.repository.UserRepository;
 import com.microservice.serviceB.service.BookingProcessService;
 import com.microservice.serviceB.service.BookingService;
+import com.microservice.serviceB.service.SequencesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,10 @@ public class BookingProcessServiceImpl implements BookingProcessService {
     BookingService bookingService;
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    SequencesService sequenceService;
+
 
     @Override
     public void processCustomerBooking(String bookingNumber) throws Exception {
@@ -72,6 +77,7 @@ public class BookingProcessServiceImpl implements BookingProcessService {
         BookingProcess data = bookingService.getBookingProcessByBookingNumber(bookingNumber);
         data.setStatus(BookingStatus.COMPLETED);
         Invoice invoice = new Invoice();
+        invoice.setInvoiceNumber(sequenceService.getSequenceNumber("INV"));
         invoice.setInvoiceDate(LocalDate.now());
         invoice.setPaymentMethod(paymentMethod);
         invoice.setTotalCost(totalCost);

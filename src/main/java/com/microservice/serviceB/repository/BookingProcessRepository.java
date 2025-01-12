@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface BookingProcessRepository extends JpaRepository<BookingProcess, UUID> {
     BookingProcess findFirstByBookingNumber(String bookingNumber);
 
-    @Query("SELECT b FROM BookingProcess b WHERE b.userId = :userId OR b.technicianId = :userId")
+    @Query("SELECT b FROM BookingProcess b WHERE b.bookingDetail.customerId = :userId OR b.bookingDetail.technicianId = :userId")
     Page<BookingProcess> findAllByUserIdOrTechnicianId(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("SELECT b FROM BookingProcess b")

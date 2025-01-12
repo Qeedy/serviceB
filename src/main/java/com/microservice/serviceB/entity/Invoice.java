@@ -21,6 +21,8 @@ public class Invoice {
     private UUID invoice;
     @Column
     private LocalDate invoiceDate;
+    @Column
+    private String invoiceNumber;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "invoiceId", referencedColumnName = "uuid")
     private BookingProcess bookingProcess;

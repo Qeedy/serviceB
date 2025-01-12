@@ -2,7 +2,7 @@ package com.microservice.serviceB.service.impl;
 
 import com.microservice.serviceB.entity.SeqNumber;
 import com.microservice.serviceB.repository.SeqRepository;
-import com.microservice.serviceB.service.SequenceService;
+import com.microservice.serviceB.service.SequencesService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class SequenceServiceImpl implements SequenceService {
+public class SequenceServiceImpl implements SequencesService {
 
     @Autowired
     SeqRepository seqRepository;
 
     @Override
-    public synchronized String getSequenceNumber(String seqPrefix) {
+    public String getSequenceNumber(String seqPrefix) {
         Optional<SeqNumber> seqNumber = seqRepository.findById(seqPrefix);
         if(seqNumber.isPresent()) {
             int nextSeqNumber = seqNumber.get().getNextSeq() + 1;

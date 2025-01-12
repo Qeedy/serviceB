@@ -31,6 +31,8 @@ public class BookingDetail {
     @Column
     private String customerEmail;
     @Column
+    private UUID customerId;
+    @Column
     private String location;
     @Column
     private String instructions;

@@ -1,5 +1,5 @@
 package com.microservice.serviceB.service;
 
-public interface SequenceService {
+public interface SequencesService {
     public String getSequenceNumber(String seqPrefix);
 }

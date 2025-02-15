@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookingListModel {
+public class BookingTaskModel {
     private String bookingId;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate bookingDate;
@@ -28,4 +28,6 @@ public class BookingListModel {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private ServiceType serviceType;
     private String technicianName;
+    private String taskName;
+    private String taskId;
 }

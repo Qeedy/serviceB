@@ -6,7 +6,13 @@ flowable:
     datasource: flowable
   application:
     deployment-mode: classpath
+  process:
+    definition-location-prefix: classpath:/processes/
 
+logging:
+  level:
+    org:
+      flowable: DEBUG
 spring:
   application:
     name: serviceB

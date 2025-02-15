@@ -18,14 +18,15 @@ import java.util.UUID;
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID invoice;
+    private UUID uuid;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "uuid")
+    private BookingProcess bookingProcess;
     @Column
     private LocalDate invoiceDate;
     @Column
     private String invoiceNumber;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "invoiceId", referencedColumnName = "uuid")
-    private BookingProcess bookingProcess;
     @Column
     private BigDecimal totalCost;
     @Column

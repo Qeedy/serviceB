@@ -1,10 +1,7 @@
 package com.microservice.serviceB.controller;
 
 import com.microservice.serviceB.enums.RejectReasonEnum;
-import com.microservice.serviceB.model.BookingDetailModel;
-import com.microservice.serviceB.model.BookingListModel;
-import com.microservice.serviceB.model.BookingProcessModel;
-import com.microservice.serviceB.model.CreateBookingModel;
+import com.microservice.serviceB.model.*;
 import com.microservice.serviceB.service.BookingTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,22 +19,16 @@ public class TaskController {
     @Autowired
     BookingTaskService bookingTaskService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<Page<BookingListModel>> getTaskByUserId(
-            @PathVariable("userId") UUID userId,
+    @GetMapping("/get-task-list")
+    public ResponseEntity<Page<BookingTaskModel>> getTaskByUserId(
+            @RequestParam("userId") UUID userId,
+            @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "isAdmin", defaultValue = "false") Boolean isAdmin,
             Pageable pageable) {
-        Page<BookingListModel> datas = isAdmin ?
-                bookingTaskService.getAllTaskAdmin(pageable) :
-                bookingTaskService.getAllTasksByTechnicianId(userId, pageable);
+        Page<BookingTaskModel> datas = isAdmin ?
+                bookingTaskService.getAllTaskAdmin(keyword, pageable) :
+                bookingTaskService.getAllTasksByTechnicianId(keyword, userId, pageable);
         return ResponseEntity.ok(datas);
-    }
-
-    @GetMapping("/detail/{bookingNumber}")
-    public ResponseEntity<BookingDetailModel> getTaskDetail(
-            @PathVariable("bookingNumber") String bookingNumber) {
-        return ResponseEntity.ok(bookingTaskService
-                .getTaskByBookingNumber(bookingNumber));
     }
 
     @PostMapping("/create")
@@ -52,6 +43,11 @@ public class TaskController {
             @RequestBody Map<String, Object> variables) {
         bookingTaskService.processTask(bookingNumber, variables);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/get-total-task")
+    public ResponseEntity<Integer> getTotalTask() {
+        return ResponseEntity.ok(bookingTaskService.getTotalTask());
     }
 
 }

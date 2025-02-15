@@ -36,8 +36,10 @@ public class BookingProcess {
     private ServiceType serviceType;
     @Column
     private LocalDateTime insertedDate;
-    @OneToOne(mappedBy = "bookingProcess")
+    @OneToOne(mappedBy = "bookingProcess", cascade = CascadeType.ALL, orphanRemoval = true)
+    @PrimaryKeyJoinColumn
     private BookingDetail bookingDetail;
-    @OneToOne(mappedBy = "bookingProcess")
+    @OneToOne(mappedBy = "bookingProcess", cascade = CascadeType.ALL, orphanRemoval = true)
+    @PrimaryKeyJoinColumn
     private Invoice invoice;
 }

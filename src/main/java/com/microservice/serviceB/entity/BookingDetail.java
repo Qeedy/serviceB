@@ -19,8 +19,9 @@ public class BookingDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "bookingDetailId", referencedColumnName = "uuid")
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "uuid")
     private BookingProcess bookingProcess;
     @Column
     private String customerName;

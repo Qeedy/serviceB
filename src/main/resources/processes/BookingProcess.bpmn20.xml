@@ -1,0 +1,175 @@
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+  <process id="bookingProcess" name="BookingProcess" isExecutable="true">
+    <documentation>Booking Process</documentation>
+    <startEvent id="startEvent1" flowable:formFieldValidation="true"/>
+    <userTask id="customer-booking-task" name="Customer Booking Task" flowable:candidateUsers="${userId}" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <serviceTask id="customer-booking-process" name="Customer Booking Process" flowable:expression="${bookingProcessService.processCustomerBooking(bookingNumber)}"/>
+    <sequenceFlow id="sid-1CF88988-298B-4658-80CC-CAB12045FEFE" sourceRef="startEvent1" targetRef="customer-booking-task"/>
+    <serviceTask id="customer-cancel-booking-process" name="Customer Cancel Booking Process" flowable:expression="${bookingProcessService.cancelCustomerBooking(bookingNumber)}"/>
+    <endEvent id="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
+    <exclusiveGateway id="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514"/>
+    <userTask id="booking-process-task" name="Booking Process Task" flowable:candidateUsers="${technicianId}" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <serviceTask id="booking-process-completed" name="Booking Process Completed" flowable:expression="${bookingProcessService.processBookingCompletion(bookingNumber)}"/>
+    <endEvent id="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2"/>
+    <userTask id="approval-payment-task" name="Approval Payment Task" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <serviceTask id="approval-payment-cancel-process" name="Approval Payment Cancel Process" flowable:expression="${bookingProcessService.rejectBookingApproval(bookingNumber)}"/>
+    <sequenceFlow id="sid-E8A3A403-0E9F-4297-A1D4-C8F14E05012A" sourceRef="approval-payment-cancel-process" targetRef="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
+    <serviceTask id="approval-booking-process" name="Approval Booking Process" flowable:expression="${bookingProcessService.processBookingApproval(bookingNumber, technicianId)}"/>
+    <sequenceFlow id="sid-2323CDC1-1E41-4052-B712-896C776C119C" name="cancel" sourceRef="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514" targetRef="approval-payment-cancel-process">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[ ${!isApproved} ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E"/>
+    <sequenceFlow id="sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04" sourceRef="customer-booking-task" targetRef="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E"/>
+    <sequenceFlow id="sid-11B0AAC8-AD41-4231-B633-01BAF5B0E88D" sourceRef="customer-cancel-booking-process" targetRef="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
+    <sequenceFlow id="sid-AFCFB211-5FA7-4A69-A9D1-A1984D344ADC" sourceRef="customer-booking-process" targetRef="approval-payment-task"/>
+    <sequenceFlow id="sid-DABF2B84-7FEB-433C-8FB4-0E3D16D15663" sourceRef="approval-payment-task" targetRef="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514"/>
+    <sequenceFlow id="sid-D8618E81-764A-495C-8F6F-4C8D2961D58D" sourceRef="approval-booking-process" targetRef="booking-process-task"/>
+    <sequenceFlow id="sid-B0839EA0-4574-4D9F-AB94-47BE63216B81" name="process" sourceRef="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E" targetRef="customer-booking-process">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[ ${isApproved} ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-30C0D03D-644F-4614-B219-A7751C51E84A" name="cancel" sourceRef="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E" targetRef="customer-cancel-booking-process">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[ ${!isApproved} ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-EE0A00D0-B233-4AA0-81C0-EC1C132393BE" name="process" sourceRef="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514" targetRef="approval-booking-process">
+      <conditionExpression xsi:type="tFormalExpression">
+        <![CDATA[ ${isApproved} ]]>
+      </conditionExpression>
+    </sequenceFlow>
+    <userTask id="create-invoice-task" name="Create Invoice" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <serviceTask id="create-invoice-completed" name="Create Invoice Process" flowable:expression="${bookingProcessService.processCreateInvoice(bookingNumber, totalCost, paymentMethod)}"/>
+    <sequenceFlow id="sid-92CE472D-45E2-4220-82C0-1B5E91B01F13"    sourceRef="create-invoice-completed" targetRef="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2"/>
+    <sequenceFlow id="sid-2F109E1F-DDE6-4A4C-BD56-6171EDB0D00B" sourceRef="booking-process-task" targetRef="booking-process-completed"/>
+    <sequenceFlow id="sid-EB940728-2A8B-404B-A411-7F98C813BF82" sourceRef="booking-process-completed" targetRef="create-invoice-task"/>
+    <sequenceFlow id="sid-889BECC7-D3CB-460E-B880-3E1432BD4A5C" sourceRef="create-invoice-task" targetRef="create-invoice-completed"/>
+    <textAnnotation id="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B">
+      <text>create invoice customer and delegate technician</text>
+    </textAnnotation>
+    <association id="sid-7536517D-E69D-4168-B378-596602BD94EC" sourceRef="approval-payment-task" targetRef="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B" associationDirection="None"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bookingProcess">
+    <bpmndi:BPMNPlane bpmnElement="bookingProcess" id="BPMNPlane_bookingProcess">
+      <bpmndi:BPMNShape bpmnElement="startEvent1" id="BPMNShape_startEvent1">
+        <omgdc:Bounds height="30.0" width="30.0" x="105.0" y="70.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="customer-booking-task" id="BPMNShape_customer-booking-task">
+        <omgdc:Bounds height="80.0" width="100.0" x="219.0" y="45.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="customer-booking-process" id="BPMNShape_customer-booking-process">
+        <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="45.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="customer-cancel-booking-process" id="BPMNShape_customer-cancel-booking-process">
+        <omgdc:Bounds height="80.0" width="100.0" x="345.0" y="180.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F" id="BPMNShape_sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F">
+        <omgdc:Bounds height="28.0" width="28.0" x="381.0" y="360.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514" id="BPMNShape_sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514">
+        <omgdc:Bounds height="40.0" width="40.0" x="540.0" y="345.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="booking-process-task" id="BPMNShape_booking-process-task">
+        <omgdc:Bounds height="80.0" width="100.0" x="885.0000249364178" y="334.0000047055161"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="booking-process-completed" id="BPMNShape_booking-process-completed">
+        <omgdc:Bounds height="63.0" width="137.0" x="866.5000371439921" y="540.0000152154413"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2" id="BPMNShape_sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2">
+        <omgdc:Bounds height="28.0" width="28.0" x="495.0000139474879" y="696.5000193222018"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="approval-payment-task" id="BPMNShape_approval-payment-task">
+        <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="180.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="approval-payment-cancel-process" id="BPMNShape_approval-payment-cancel-process">
+        <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="465.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="approval-booking-process" id="BPMNShape_approval-booking-process">
+        <omgdc:Bounds height="80.0" width="100.0" x="708.5000197025877" y="325.00000457872073"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E" id="BPMNShape_sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E">
+        <omgdc:Bounds height="40.0" width="40.0" x="375.0" y="65.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B" id="BPMNShape_sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B">
+        <omgdc:Bounds height="89.0" width="140.0" x="675.0" y="175.5"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-7536517D-E69D-4168-B378-596602BD94EC" id="BPMNShape_sid-7536517D-E69D-4168-B378-596602BD94EC">
+        <omgdc:Bounds height="0.9845756329623327" width="64.38460880720095" x="610.1061330963995" y="218.24919655851883"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="create-invoice-task" id="BPMNShape_create-invoice-task">
+        <omgdc:Bounds height="80.00000000000011" width="100.0" x="660.0000185966506" y="531.500022703411"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="create-invoice-completed" id="BPMNShape_create-invoice-completed">
+        <omgdc:Bounds height="71.0" width="109.0" x="655.5000278315784" y="675.0000095096508"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04" id="BPMNEdge_sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04">
+        <omgdi:waypoint x="318.94999999999914" y="85.19743083003952"/>
+        <omgdi:waypoint x="375.42063492063494" y="85.42063492063492"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-EB940728-2A8B-404B-A411-7F98C813BF82" id="BPMNEdge_sid-EB940728-2A8B-404B-A411-7F98C813BF82">
+        <omgdi:waypoint x="866.5000331902169" y="571.5000174934479"/>
+        <omgdi:waypoint x="759.9500185965717" y="571.500021039418"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-D8618E81-764A-495C-8F6F-4C8D2961D58D" id="BPMNEdge_sid-D8618E81-764A-495C-8F6F-4C8D2961D58D">
+        <omgdi:waypoint x="808.4500197025876" y="365.0442238059275"/>
+        <omgdi:waypoint x="885.0000249363529" y="365.1119912148186"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-2323CDC1-1E41-4052-B712-896C776C119C" id="BPMNEdge_sid-2323CDC1-1E41-4052-B712-896C776C119C">
+        <omgdi:waypoint x="560.5" y="384.440958051646"/>
+        <omgdi:waypoint x="560.5" y="465.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-30C0D03D-644F-4614-B219-A7751C51E84A" id="BPMNEdge_sid-30C0D03D-644F-4614-B219-A7751C51E84A">
+        <omgdi:waypoint x="395.5" y="104.44227604521973"/>
+        <omgdi:waypoint x="395.5" y="180.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-AFCFB211-5FA7-4A69-A9D1-A1984D344ADC" id="BPMNEdge_sid-AFCFB211-5FA7-4A69-A9D1-A1984D344ADC">
+        <omgdi:waypoint x="560.0" y="124.95"/>
+        <omgdi:waypoint x="560.0" y="180.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-92CE472D-45E2-4220-82C0-1B5E91B01F13" id="BPMNEdge_sid-92CE472D-45E2-4220-82C0-1B5E91B01F13">
+        <omgdi:waypoint x="655.5000278314046" y="710.5000121678266"/>
+        <omgdi:waypoint x="522.9499379574257" y="710.5000186387406"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-11B0AAC8-AD41-4231-B633-01BAF5B0E88D" id="BPMNEdge_sid-11B0AAC8-AD41-4231-B633-01BAF5B0E88D">
+        <omgdi:waypoint x="395.0" y="259.95000000000005"/>
+        <omgdi:waypoint x="395.0" y="360.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-2F109E1F-DDE6-4A4C-BD56-6171EDB0D00B" id="BPMNEdge_sid-2F109E1F-DDE6-4A4C-BD56-6171EDB0D00B">
+        <omgdi:waypoint x="935.0000278567326" y="413.9500047055161"/>
+        <omgdi:waypoint x="935.0000370708929" y="540.0000152154413"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7536517D-E69D-4168-B378-596602BD94EC" id="BPMNEdge_sid-7536517D-E69D-4168-B378-596602BD94EC">
+        <omgdi:waypoint x="609.9499999999979" y="219.2353951890034"/>
+        <omgdi:waypoint x="674.9999999999998" y="218.2406443298969"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-B0839EA0-4574-4D9F-AB94-47BE63216B81" id="BPMNEdge_sid-B0839EA0-4574-4D9F-AB94-47BE63216B81">
+        <omgdi:waypoint x="414.4432859268369" y="85.5"/>
+        <omgdi:waypoint x="510.0" y="85.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-1CF88988-298B-4658-80CC-CAB12045FEFE" id="BPMNEdge_sid-1CF88988-298B-4658-80CC-CAB12045FEFE">
+        <omgdi:waypoint x="134.94999917679615" y="85.0"/>
+        <omgdi:waypoint x="219.0" y="85.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-EE0A00D0-B233-4AA0-81C0-EC1C132393BE" id="BPMNEdge_sid-EE0A00D0-B233-4AA0-81C0-EC1C132393BE">
+        <omgdi:waypoint x="579.4448506793979" y="365.50000047175917"/>
+        <omgdi:waypoint x="708.5000192307821" y="365.5000036844524"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-E8A3A403-0E9F-4297-A1D4-C8F14E05012A" id="BPMNEdge_sid-E8A3A403-0E9F-4297-A1D4-C8F14E05012A">
+        <omgdi:waypoint x="510.0" y="505.0"/>
+        <omgdi:waypoint x="395.0" y="505.0"/>
+        <omgdi:waypoint x="395.0" y="387.9499299261319"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-889BECC7-D3CB-460E-B880-3E1432BD4A5C" id="BPMNEdge_sid-889BECC7-D3CB-460E-B880-3E1432BD4A5C">
+        <omgdi:waypoint x="710.0000212508621" y="611.450022703411"/>
+        <omgdi:waypoint x="710.0000254730176" y="675.0000095096508"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-DABF2B84-7FEB-433C-8FB4-0E3D16D15663" id="BPMNEdge_sid-DABF2B84-7FEB-433C-8FB4-0E3D16D15663">
+        <omgdi:waypoint x="560.1372852233677" y="259.95000000000005"/>
+        <omgdi:waypoint x="560.4310344827586" y="345.4310344827586"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Service("bookingProcessService")
 public class BookingProcessServiceImpl implements BookingProcessService {
 
     @Autowired
@@ -81,6 +81,7 @@ public class BookingProcessServiceImpl implements BookingProcessService {
         invoice.setInvoiceDate(LocalDate.now());
         invoice.setPaymentMethod(paymentMethod);
         invoice.setTotalCost(totalCost);
+        invoice.setBookingProcess(data);
         data.setInvoice(invoice);
         bookingService.updateBookingProcess(data);
     }

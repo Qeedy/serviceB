@@ -13,26 +13,18 @@ logging:
   level:
     org:
       flowable: DEBUG
-
 spring:
   application:
     name: serviceB
-#  datasource:
-#    url: jdbc:postgresql://taconditioner.flycast:5432/postgres
-#    username: postgres
-#    password: AiGg4lSecXTv0Gg
-#    driver-class-name: org.postgresql.Driver
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: AiGg4lSecXTv0Gg
+    password: admin
+    driver-class-name: org.postgresql.Driver
     flowable:
       url: jdbc:postgresql://localhost:5432/postgres?currentSchema=flowable
       username: postgres
-      password: AiGg4lSecXTv0Gg
-#      url: jdbc:postgresql://taconditioner.flycast:5432/postgres?currentSchema=flowable
-#      username: postgres
-#      password: AiGg4lSecXTv0Gg
+      password: admin
       driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -48,6 +40,15 @@ spring:
           auth: true
           starttls:
             enable: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      enable-auto-commit: true
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    consumer-group-1:
+      group-id: transaction
+      auto-offset-reset: latest
 
 test:
   parent:

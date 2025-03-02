@@ -27,14 +27,6 @@ public class BookingProcess {
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
     @Column
-    private LocalDateTime bookingDate;
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ServiceTime serviceTime;
-    @Column
-    @Enumerated(EnumType.STRING)
-    private ServiceType serviceType;
-    @Column
     private LocalDateTime insertedDate;
     @OneToOne(mappedBy = "bookingProcess", cascade = CascadeType.ALL, orphanRemoval = true)
     @PrimaryKeyJoinColumn

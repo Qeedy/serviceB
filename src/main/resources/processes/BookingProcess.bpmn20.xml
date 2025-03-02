@@ -3,7 +3,7 @@
     <documentation>Booking Process</documentation>
     <startEvent id="startEvent1" flowable:formFieldValidation="true"/>
     <userTask id="customer-booking-task" name="Customer Booking Task" flowable:candidateUsers="${userId}" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
-    <serviceTask id="customer-booking-process" name="Customer Booking Process" flowable:expression="${bookingProcessService.processCustomerBooking(bookingNumber)}"/>
+    <serviceTask id="customer-booking-process" name="Customer Booking Process" flowable:expression="${bookingProcessService.processCustomerBooking(bookingNumber, paymentMethod)}"/>
     <sequenceFlow id="sid-1CF88988-298B-4658-80CC-CAB12045FEFE" sourceRef="startEvent1" targetRef="customer-booking-task"/>
     <serviceTask id="customer-cancel-booking-process" name="Customer Cancel Booking Process" flowable:expression="${bookingProcessService.cancelCustomerBooking(bookingNumber)}"/>
     <endEvent id="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
@@ -11,7 +11,7 @@
     <userTask id="booking-process-task" name="Booking Process Task" flowable:candidateUsers="${technicianId}" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
     <serviceTask id="booking-process-completed" name="Booking Process Completed" flowable:expression="${bookingProcessService.processBookingCompletion(bookingNumber)}"/>
     <endEvent id="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2"/>
-    <userTask id="approval-payment-task" name="Approval Payment Task" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <userTask id="approval-booking-task" name="Approval Booking Task" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
     <serviceTask id="approval-payment-cancel-process" name="Approval Payment Cancel Process" flowable:expression="${bookingProcessService.rejectBookingApproval(bookingNumber)}"/>
     <sequenceFlow id="sid-E8A3A403-0E9F-4297-A1D4-C8F14E05012A" sourceRef="approval-payment-cancel-process" targetRef="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
     <serviceTask id="approval-booking-process" name="Approval Booking Process" flowable:expression="${bookingProcessService.processBookingApproval(bookingNumber, technicianId)}"/>
@@ -23,8 +23,8 @@
     <exclusiveGateway id="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E"/>
     <sequenceFlow id="sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04" sourceRef="customer-booking-task" targetRef="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E"/>
     <sequenceFlow id="sid-11B0AAC8-AD41-4231-B633-01BAF5B0E88D" sourceRef="customer-cancel-booking-process" targetRef="sid-0DD8E700-58CE-4DF3-99C8-73A7C192017F"/>
-    <sequenceFlow id="sid-AFCFB211-5FA7-4A69-A9D1-A1984D344ADC" sourceRef="customer-booking-process" targetRef="approval-payment-task"/>
-    <sequenceFlow id="sid-DABF2B84-7FEB-433C-8FB4-0E3D16D15663" sourceRef="approval-payment-task" targetRef="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514"/>
+    <sequenceFlow id="sid-AFCFB211-5FA7-4A69-A9D1-A1984D344ADC" sourceRef="customer-booking-process" targetRef="approval-booking-task"/>
+    <sequenceFlow id="sid-DABF2B84-7FEB-433C-8FB4-0E3D16D15663" sourceRef="approval-booking-task" targetRef="sid-76B8DF7D-1484-4CA1-89A9-E41B16BDE514"/>
     <sequenceFlow id="sid-D8618E81-764A-495C-8F6F-4C8D2961D58D" sourceRef="approval-booking-process" targetRef="booking-process-task"/>
     <sequenceFlow id="sid-B0839EA0-4574-4D9F-AB94-47BE63216B81" name="process" sourceRef="sid-FF0B2F75-BA39-43FC-804D-F6DD120E927E" targetRef="customer-booking-process">
       <conditionExpression xsi:type="tFormalExpression">
@@ -41,16 +41,16 @@
         <![CDATA[ ${isApproved} ]]>
       </conditionExpression>
     </sequenceFlow>
-    <userTask id="create-invoice-task" name="Create Invoice" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
-    <serviceTask id="create-invoice-completed" name="Create Invoice Process" flowable:expression="${bookingProcessService.processCreateInvoice(bookingNumber, totalCost, paymentMethod)}"/>
-    <sequenceFlow id="sid-92CE472D-45E2-4220-82C0-1B5E91B01F13"    sourceRef="create-invoice-completed" targetRef="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2"/>
+    <userTask id="completion-task" name="Completion Task" flowable:candidateGroups="admin" flowable:dueDate="${dueDate}" flowable:formFieldValidation="true"/>
+    <serviceTask id="create-invoice-completed" name="Create Invoice Process" flowable:expression="${bookingProcessService.processCreateInvoice(bookingNumber)}"/>
+    <sequenceFlow id="sid-92CE472D-45E2-4220-82C0-1B5E91B01F13" sourceRef="create-invoice-completed" targetRef="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2"/>
     <sequenceFlow id="sid-2F109E1F-DDE6-4A4C-BD56-6171EDB0D00B" sourceRef="booking-process-task" targetRef="booking-process-completed"/>
-    <sequenceFlow id="sid-EB940728-2A8B-404B-A411-7F98C813BF82" sourceRef="booking-process-completed" targetRef="create-invoice-task"/>
-    <sequenceFlow id="sid-889BECC7-D3CB-460E-B880-3E1432BD4A5C" sourceRef="create-invoice-task" targetRef="create-invoice-completed"/>
+    <sequenceFlow id="sid-EB940728-2A8B-404B-A411-7F98C813BF82" sourceRef="booking-process-completed" targetRef="completion-task"/>
+    <sequenceFlow id="sid-889BECC7-D3CB-460E-B880-3E1432BD4A5C" sourceRef="completion-task" targetRef="create-invoice-completed"/>
     <textAnnotation id="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B">
       <text>create invoice customer and delegate technician</text>
     </textAnnotation>
-    <association id="sid-7536517D-E69D-4168-B378-596602BD94EC" sourceRef="approval-payment-task" targetRef="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B" associationDirection="None"/>
+    <association id="sid-7536517D-E69D-4168-B378-596602BD94EC" sourceRef="approval-booking-task" targetRef="sid-E602E5CB-28A4-4E39-8F6F-CE523D52970B" associationDirection="None"/>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_bookingProcess">
     <bpmndi:BPMNPlane bpmnElement="bookingProcess" id="BPMNPlane_bookingProcess">
@@ -58,7 +58,7 @@
         <omgdc:Bounds height="30.0" width="30.0" x="105.0" y="70.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="customer-booking-task" id="BPMNShape_customer-booking-task">
-        <omgdc:Bounds height="80.0" width="100.0" x="219.0" y="45.0"/>
+        <omgdc:Bounds height="80.0" width="100.0" x="210.0" y="45.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="customer-booking-process" id="BPMNShape_customer-booking-process">
         <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="45.0"/>
@@ -81,7 +81,7 @@
       <bpmndi:BPMNShape bpmnElement="sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2" id="BPMNShape_sid-48C49FA2-40AF-40DF-AE6E-3F5D170B31A2">
         <omgdc:Bounds height="28.0" width="28.0" x="495.0000139474879" y="696.5000193222018"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="approval-payment-task" id="BPMNShape_approval-payment-task">
+      <bpmndi:BPMNShape bpmnElement="approval-booking-task" id="BPMNShape_approval-booking-task">
         <omgdc:Bounds height="80.0" width="100.0" x="510.0" y="180.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="approval-payment-cancel-process" id="BPMNShape_approval-payment-cancel-process">
@@ -99,15 +99,15 @@
       <bpmndi:BPMNShape bpmnElement="sid-7536517D-E69D-4168-B378-596602BD94EC" id="BPMNShape_sid-7536517D-E69D-4168-B378-596602BD94EC">
         <omgdc:Bounds height="0.9845756329623327" width="64.38460880720095" x="610.1061330963995" y="218.24919655851883"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="create-invoice-task" id="BPMNShape_create-invoice-task">
+      <bpmndi:BPMNShape bpmnElement="completion-task" id="BPMNShape_completion-task">
         <omgdc:Bounds height="80.00000000000011" width="100.0" x="660.0000185966506" y="531.500022703411"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="create-invoice-completed" id="BPMNShape_create-invoice-completed">
         <omgdc:Bounds height="71.0" width="109.0" x="655.5000278315784" y="675.0000095096508"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04" id="BPMNEdge_sid-30FC57AD-E498-46C9-8A79-A5BE83CCDE04">
-        <omgdi:waypoint x="318.94999999999914" y="85.19743083003952"/>
-        <omgdi:waypoint x="375.42063492063494" y="85.42063492063492"/>
+        <omgdi:waypoint x="309.9499999999971" y="85.18431734317343"/>
+        <omgdi:waypoint x="375.4259259259259" y="85.42592592592594"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-EB940728-2A8B-404B-A411-7F98C813BF82" id="BPMNEdge_sid-EB940728-2A8B-404B-A411-7F98C813BF82">
         <omgdi:waypoint x="866.5000331902169" y="571.5000174934479"/>
@@ -150,8 +150,8 @@
         <omgdi:waypoint x="510.0" y="85.5"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-1CF88988-298B-4658-80CC-CAB12045FEFE" id="BPMNEdge_sid-1CF88988-298B-4658-80CC-CAB12045FEFE">
-        <omgdi:waypoint x="134.94999917679615" y="85.0"/>
-        <omgdi:waypoint x="219.0" y="85.0"/>
+        <omgdi:waypoint x="134.9499990675947" y="85.0"/>
+        <omgdi:waypoint x="210.0" y="85.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sid-EE0A00D0-B233-4AA0-81C0-EC1C132393BE" id="BPMNEdge_sid-EE0A00D0-B233-4AA0-81C0-EC1C132393BE">
         <omgdi:waypoint x="579.4448506793979" y="365.50000047175917"/>

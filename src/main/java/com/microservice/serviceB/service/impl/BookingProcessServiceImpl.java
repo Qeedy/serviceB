@@ -30,9 +30,12 @@ public class BookingProcessServiceImpl implements BookingProcessService {
 
 
     @Override
-    public void processCustomerBooking(String bookingNumber) throws Exception {
+    public void processCustomerBooking(String bookingNumber, String paymentMethod) throws Exception {
         BookingProcess data = bookingService.getBookingProcessByBookingNumber(bookingNumber);
         data.setStatus(BookingStatus.PENDING);
+        Invoice invoice = data.getInvoice();
+        invoice.setPaymentMethod(paymentMethod);
+        data.setInvoice(invoice);
         bookingService.updateBookingProcess(data);
     }
 
@@ -73,16 +76,9 @@ public class BookingProcessServiceImpl implements BookingProcessService {
     }
 
     @Override
-    public void processCreateInvoice(String bookingNumber, BigDecimal totalCost, String paymentMethod) throws Exception {
+    public void processCreateInvoice(String bookingNumber) throws Exception {
         BookingProcess data = bookingService.getBookingProcessByBookingNumber(bookingNumber);
         data.setStatus(BookingStatus.COMPLETED);
-        Invoice invoice = new Invoice();
-        invoice.setInvoiceNumber(sequenceService.getSequenceNumber("INV"));
-        invoice.setInvoiceDate(LocalDate.now());
-        invoice.setPaymentMethod(paymentMethod);
-        invoice.setTotalCost(totalCost);
-        invoice.setBookingProcess(data);
-        data.setInvoice(invoice);
         bookingService.updateBookingProcess(data);
     }
 }

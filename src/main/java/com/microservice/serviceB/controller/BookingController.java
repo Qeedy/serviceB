@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +40,26 @@ public class BookingController {
         return ResponseEntity.ok( !isAdmin ?
                 bookingService.getAllBookingProcessByUserId(userId, search, pageable)
                 : bookingService.getAllBookingProcess(search, pageable));
+    }
+
+    @GetMapping("/bookings-report-preview")
+    public ResponseEntity<Page<BookingListModel>> getReportBookingsPreview(
+            @RequestParam(required = false) String status,
+            @RequestParam String dateRange,
+            @RequestParam(required = false) LocalDateTime dateFrom,
+            @RequestParam(required = false) LocalDateTime dateTo,
+            Pageable pageable) {
+        return ResponseEntity.ok(bookingService.getReportBookingsPreview(
+                status, dateRange, dateFrom, dateTo, pageable));
+    }
+    @GetMapping("/bookings-report")
+    public ResponseEntity<List<BookingListModel>> getReportBookings(
+            @RequestParam(required = false) String status,
+            @RequestParam String dateRange,
+            @RequestParam(required = false) LocalDateTime dateFrom,
+            @RequestParam(required = false) LocalDateTime dateTo) {
+        return ResponseEntity.ok(bookingService.getReportBookings(
+                status, dateRange, dateFrom, dateTo));
     }
 
     @GetMapping("/get-revenue")

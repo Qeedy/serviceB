@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,4 +23,14 @@ public interface BookingService {
     public BigDecimal getRevenue();
     public Integer getTotalBooking();
     public Map<String, Object> getTransactionHistory();
+    public List<BookingListModel> getReportBookings(
+            String status, String dateRange,
+            LocalDateTime customDateFrom,
+            LocalDateTime customDateTo);
+    public Page<BookingListModel> getReportBookingsPreview(
+            String status, String dateRange,
+            LocalDateTime customDateFrom,
+            LocalDateTime customDateTo,
+            Pageable pageable);
+
 }

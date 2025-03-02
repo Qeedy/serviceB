@@ -96,7 +96,7 @@ public class BookingTaskServiceImpl implements BookingTaskService {
             Map<String, Object> variables = new HashMap<>();
             variables.put("bookingNumber", data.getBookingNumber());
             variables.put("userId", data.getBookingDetail().getCustomerId());
-            variables.put("dueDate", data.getBookingDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+            variables.put("dueDate", data.getBookingDetail().getBookingDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
             runtimeService.startProcessInstanceByKey(
                 "bookingProcess",
                 data.getBookingNumber(), variables);

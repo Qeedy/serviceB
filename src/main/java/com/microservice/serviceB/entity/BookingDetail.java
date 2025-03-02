@@ -1,10 +1,13 @@
 package com.microservice.serviceB.entity;
 
+import com.microservice.serviceB.enums.ServiceTime;
+import com.microservice.serviceB.enums.ServiceType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -36,12 +39,21 @@ public class BookingDetail {
     @Column
     private String location;
     @Column
-    private String instructions;
-    @Column
     private UUID technicianId;
     @Column
     private String technitioanName;
     @Column
+    private String serviceName;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ServiceType serviceType;
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ServiceTime serviceTime;
+    @Column
+    private LocalDateTime bookingDate;
+    @Column
+    private String instructions;
+    @Column
     private LocalDate repairCompletionDate;
-
 }

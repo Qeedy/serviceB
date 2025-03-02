@@ -1,6 +1,7 @@
 package com.microservice.serviceB.repository;
 
 import com.microservice.serviceB.entity.BookingProcess;
+import com.microservice.serviceB.enums.BookingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,7 +32,7 @@ public interface BookingProcessRepository extends JpaRepository<BookingProcess, 
 
     List<BookingProcess> findByBookingNumberIn(List<String> bookingNumbers);
 
-    @Query("SELECT SUM(b.invoice.totalCost) FROM BookingProcess b")
+    @Query("SELECT SUM(b.invoice.totalCost) FROM BookingProcess b WHERE b.status='COMPLETED'")
     BigDecimal sumRevenue();
 
     @Query("SELECT COUNT(b) FROM BookingProcess b")
@@ -43,4 +44,22 @@ public interface BookingProcessRepository extends JpaRepository<BookingProcess, 
             "GROUP BY MONTH(b.insertedDate) " +
             "ORDER BY MONTH(b.insertedDate)")
     List<Object[]> getLastSixMonthsRevenueAndBookings(@Param("sixMonthsAgo") LocalDateTime sixMonthsAgo);
+
+    @Query("SELECT b FROM BookingProcess b " +
+            "WHERE (:status IS NULL OR b.status = :status) " +
+            "AND (cast(:dateFrom as date) IS NULL OR cast(:dateTo as date) IS NULL OR b.insertedDate BETWEEN :dateFrom AND :dateTo)")
+    List<BookingProcess> getReportBookings(
+            @Param("status") BookingStatus status,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo);
+
+    @Query("SELECT b FROM BookingProcess b " +
+            "WHERE (:status IS NULL OR b.status = :status) " +
+            "AND (cast(:dateFrom as date) IS NULL OR cast(:dateTo as date) IS NULL OR b.insertedDate BETWEEN :dateFrom AND :dateTo)")
+    Page<BookingProcess> getReportBookingsPreview(
+            @Param("status") BookingStatus status,
+            @Param("dateFrom") LocalDateTime dateFrom,
+            @Param("dateTo") LocalDateTime dateTo,
+            Pageable pageable);
+
 }

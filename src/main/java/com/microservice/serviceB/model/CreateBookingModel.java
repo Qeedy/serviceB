@@ -5,6 +5,7 @@ import com.microservice.serviceB.enums.ServiceTime;
 import com.microservice.serviceB.enums.ServiceType;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public class CreateBookingModel {
     private UUID customerId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private ServiceType serviceType;
+    private String serviceName;
+    private BigDecimal cost;
     private String address;
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate bookingDate;

@@ -2,6 +2,7 @@ package com.microservice.serviceB.service.impl;
 
 import com.microservice.serviceB.entity.BookingDetail;
 import com.microservice.serviceB.entity.BookingProcess;
+import com.microservice.serviceB.entity.Invoice;
 import com.microservice.serviceB.entity.User;
 import com.microservice.serviceB.enums.BookingStatus;
 import com.microservice.serviceB.enums.ServiceTime;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,9 +66,9 @@ public class BookingServiceImpl implements BookingService {
                 .bookingId(data.getBookingNumber())
                 .bookingStatus(data.getStatus())
                 .bookingDateTime(constructBookingDateTime(
-                        data.getBookingDate().toLocalDate(),
-                        data.getServiceTime()))
-                .serviceType(data.getServiceType())
+                        data.getBookingDetail().getBookingDate().toLocalDate(),
+                        data.getBookingDetail().getServiceTime()))
+                .serviceType(data.getBookingDetail().getServiceType())
                 .location(data.getBookingDetail().getLocation())
                 .technitionName(data.getBookingDetail().getTechnitioanName())
                 .instructions(data.getBookingDetail().getInstructions())
@@ -84,27 +86,27 @@ public class BookingServiceImpl implements BookingService {
 
     private BookingListModel constructBookingListModel(BookingProcess data) {
         return BookingListModel.builder()
-                .bookingDate(data.getBookingDate().toLocalDate())
+                .bookingDate(data.getBookingDetail().getBookingDate().toLocalDate())
                 .technicianName(data.getBookingDetail().getTechnitioanName())
                 .bookingId(data.getBookingNumber())
                 .createdDate(data.getInsertedDate())
-                .serviceTime(data.getServiceTime())
+                .serviceTime(data.getBookingDetail().getServiceTime())
                 .bookingStatus(data.getStatus())
                 .customerName(data.getBookingDetail().getCustomerName())
-                .serviceType(data.getServiceType())
+                .serviceType(data.getBookingDetail().getServiceType())
                 .build();
     }
 
     private BookingTaskModel constructBookingTaskModel(BookingProcess data) {
         return BookingTaskModel.builder()
-                .bookingDate(data.getBookingDate().toLocalDate())
+                .bookingDate(data.getBookingDetail().getBookingDate().toLocalDate())
                 .technicianName(data.getBookingDetail().getTechnitioanName())
                 .bookingId(data.getBookingNumber())
                 .createdDate(data.getInsertedDate())
-                .serviceTime(data.getServiceTime())
+                .serviceTime(data.getBookingDetail().getServiceTime())
                 .bookingStatus(data.getStatus())
                 .customerName(data.getBookingDetail().getCustomerName())
-                .serviceType(data.getServiceType())
+                .serviceType(data.getBookingDetail().getServiceType())
                 .build();
     }
 
@@ -135,10 +137,6 @@ public class BookingServiceImpl implements BookingService {
         BookingProcess bookingProcess = BookingProcess.builder()
                 .status(BookingStatus.DRAFT)
                 .bookingNumber(sequenceService.getSequenceNumber("BO"))
-                .bookingDate(model.getBookingDate()
-                        .atTime(model.getServiceTime().getMaxTime(), 0))
-                .serviceTime(model.getServiceTime())
-                .serviceType(model.getServiceType())
                 .insertedDate(LocalDateTime.now())
                 .build();
         BookingDetail bookingDetail = BookingDetail.builder()
@@ -150,7 +148,18 @@ public class BookingServiceImpl implements BookingService {
                 .customerEmail(user.getEmail())
                 .customerPhoneNumber(user.getPhoneNumber())
                 .instructions(model.getInstruction())
+                .bookingDate(model.getBookingDate()
+                        .atTime(model.getServiceTime().getMaxTime(), 0))
+                .serviceTime(model.getServiceTime())
+                .serviceType(model.getServiceType())
                 .build();
+        Invoice invoice = Invoice.builder()
+                .invoiceNumber(sequenceService.getSequenceNumber("INV"))
+                .invoiceDate(LocalDate.now())
+                .totalCost(model.getCost())
+                .bookingProcess(bookingProcess)
+                .build();
+        bookingProcess.setInvoice(invoice);
         bookingProcess.setBookingDetail(bookingDetail);
         BookingProcess data = bookingProcessRepository.save(bookingProcess);
         return data;
@@ -213,5 +222,78 @@ public class BookingServiceImpl implements BookingService {
         response.put("bookings", bookings);
 
         return response;
+    }
+
+    @Override
+    public List<BookingListModel> getReportBookings(
+            String status, String dateRange,
+            LocalDateTime customDateFrom,
+            LocalDateTime customDateTo) {
+        LocalDateTime dateFrom = null;
+        LocalDateTime dateTo = null;
+        BookingStatus statusEnum = (status != null && !status.isEmpty()) ? BookingStatus.valueOf(status.toUpperCase()) : null;
+        switch (dateRange.toUpperCase()) {
+            case "TODAY":
+                dateFrom = LocalDate.now().atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "WEEKLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "MONTHLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "YEARLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "CUSTOM_DATE":
+                dateFrom = customDateFrom;
+                dateTo = customDateTo;
+                break;
+            default:
+                break;
+        }
+        return bookingProcessRepository.getReportBookings(statusEnum, dateFrom, dateTo)
+                .stream().map(this::constructBookingListModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<BookingListModel> getReportBookingsPreview(
+            String status, String dateRange,
+            LocalDateTime customDateFrom,
+            LocalDateTime customDateTo, Pageable pageable) {
+        LocalDateTime dateFrom = null;
+        LocalDateTime dateTo = null;
+        BookingStatus statusEnum = (status != null && !status.isEmpty()) ? BookingStatus.valueOf(status.toUpperCase()) : null;
+        switch (dateRange.toUpperCase()) {
+            case "TODAY":
+                dateFrom = LocalDate.now().atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "WEEKLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "MONTHLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "YEARLY":
+                dateFrom = LocalDate.now().with(TemporalAdjusters.firstDayOfYear()).atStartOfDay();
+                dateTo = LocalDateTime.now();
+                break;
+            case "CUSTOM_DATE":
+                dateFrom = customDateFrom;
+                dateTo = customDateTo;
+                break;
+            default:
+                break;
+        }
+        return bookingProcessRepository.getReportBookingsPreview(
+                    statusEnum, dateFrom, dateTo, pageable)
+                .map(this::constructBookingListModel);
     }
 }

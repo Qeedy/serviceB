@@ -65,6 +65,7 @@ public class BookingServiceImpl implements BookingService {
                 .uuid(data.getUuid())
                 .bookingId(data.getBookingNumber())
                 .bookingStatus(data.getStatus())
+                .serviceName(data.getBookingDetail().getServiceName())
                 .bookingDateTime(constructBookingDateTime(
                         data.getBookingDetail().getBookingDate().toLocalDate(),
                         data.getBookingDetail().getServiceTime()))
@@ -152,6 +153,7 @@ public class BookingServiceImpl implements BookingService {
                         .atTime(model.getServiceTime().getMaxTime(), 0))
                 .serviceTime(model.getServiceTime())
                 .serviceType(model.getServiceType())
+                .serviceName(model.getServiceName())
                 .build();
         Invoice invoice = Invoice.builder()
                 .invoiceNumber(sequenceService.getSequenceNumber("INV"))

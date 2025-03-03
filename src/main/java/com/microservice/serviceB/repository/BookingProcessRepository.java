@@ -38,7 +38,7 @@ public interface BookingProcessRepository extends JpaRepository<BookingProcess, 
     @Query("SELECT COUNT(b) FROM BookingProcess b")
     Integer getTotalBooking();
 
-    @Query("SELECT MONTH(b.insertedDate) AS month, SUM(b.invoice.totalCost) AS totalRevenue, COUNT(b) AS totalBookings " +
+    @Query("SELECT MONTH(b.insertedDate) AS month, SUM(CASE WHEN b.status = 'COMPLETED' THEN b.invoice.totalCost ELSE 0 END) AS totalRevenue, COUNT(b) AS totalBookings " +
             "FROM BookingProcess b " +
             "WHERE b.insertedDate >= :sixMonthsAgo " +
             "GROUP BY MONTH(b.insertedDate) " +
